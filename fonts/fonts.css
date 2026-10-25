@@ -1,0 +1,5 @@
+/* Lokal ausgelieferte Schriften (SIL Open Font License, siehe OFL-*.txt).
+   Nur der lateinische Zeichensatz, der reicht fuer Deutsch und Englisch. */
+@font-face{font-family:"Caveat";font-style:normal;font-weight:400 700;font-display:swap;src:url(caveat.woff2) format("woff2");}
+@font-face{font-family:"Gochi Hand";font-style:normal;font-weight:400;font-display:swap;src:url(gochi-hand.woff2) format("woff2");}
+@font-face{font-family:"Patrick Hand";font-style:normal;font-weight:400;font-display:swap;src:url(patrick-hand.woff2) format("woff2");}

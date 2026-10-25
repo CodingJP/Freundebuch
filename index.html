@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Freundebuch</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#e8556d">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+  :root{
+    --paper:#fffdf3;--line:#cfe3f0;--margin:#f4a9bb;--ink:#3a3a52;
+    --accent:#e8556d;--accent2:#2bb3a3;--accent3:#ffce4f;--pen:#2a5db0;
+    --shadow:rgba(58,58,82,.22);
+    --hand:"Patrick Hand","Comic Sans MS",cursive;
+    --hand2:"Gochi Hand","Comic Sans MS",cursive;
+    --pen-font:"Caveat","Comic Sans MS",cursive;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:var(--hand);color:var(--ink);
+    background:
+      radial-gradient(circle at 12% 18%, #ffe3ec 0, transparent 38%),
+      radial-gradient(circle at 88% 12%, #d7f1ff 0, transparent 38%),
+      radial-gradient(circle at 80% 88%, #fff0c2 0, transparent 42%),
+      radial-gradient(circle at 16% 82%, #d6f8e0 0, transparent 42%),
+      #eef2f7;
+    min-height:100vh;padding:18px 14px 70px;}
+
+  /* Login */
+  .overlay{position:fixed;inset:0;background:rgba(40,42,60,.55);backdrop-filter:blur(4px);
+    display:flex;align-items:center;justify-content:center;z-index:1000;padding:16px;}
+  .login-card{background:var(--paper);border-radius:22px;padding:30px 26px;max-width:380px;width:100%;
+    text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.35);border:3px solid #fff;}
+  .login-card .big{font-size:54px;}
+  .login-card h2{font-family:var(--hand2);margin:6px 0 4px;font-size:30px;}
+  .login-card p{margin:0 0 16px;opacity:.8;}
+  .login-card input{font-family:var(--hand);font-size:20px;text-align:center;width:100%;padding:12px;
+    border:2px dashed var(--margin);border-radius:12px;outline:none;background:#fff;}
+  .login-err{color:#c0392b;font-size:14px;min-height:18px;margin:8px 0;}
+  .login-card button{margin-top:6px;width:100%;}
+
+  .cover{max-width:900px;margin:0 auto 14px;position:relative;text-align:center;background:var(--paper);
+    border-radius:20px;padding:22px 18px 18px;box-shadow:0 10px 30px var(--shadow);border:3px solid #fff;overflow:hidden;}
+  .cover .tape{position:absolute;top:-14px;left:50%;transform:translateX(-50%) rotate(-3deg);
+    width:140px;height:30px;background:rgba(255,206,79,.7);box-shadow:0 2px 6px rgba(0,0,0,.12);}
+  .confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+  .confetti span{position:absolute;top:-20px;font-size:18px;animation:fall linear infinite;}
+  @keyframes fall{to{transform:translateY(220px) rotate(360deg);opacity:.2}}
+  .title-input{font-family:var(--hand2);font-size:clamp(26px,5.5vw,46px);text-align:center;border:none;
+    background:transparent;width:100%;color:var(--ink);outline:none;text-shadow:2px 2px 0 #fff,4px 4px 0 var(--accent2);}
+  .cover p{margin:4px 0 0;font-size:16px;opacity:.8;}
+
+  .status{max-width:900px;margin:0 auto 18px;font-size:14px;background:#fff;border-radius:12px;padding:9px 14px;
+    box-shadow:0 4px 14px var(--shadow);display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:center;}
+
+  .toolbar{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin:0 auto 22px;max-width:900px;}
+  button{font-family:var(--hand);font-size:15px;cursor:pointer;border:none;border-radius:14px;padding:10px 16px;
+    color:#fff;background:var(--accent);font-weight:bold;box-shadow:0 4px 0 rgba(0,0,0,.12);transition:transform .08s,box-shadow .08s;}
+  button:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.12);}
+  button.secondary{background:var(--accent2);}
+  button.gold{background:var(--accent3);color:#5a4500;}
+  button.ghost{background:#fff;color:var(--ink);border:2px dashed var(--line);box-shadow:none;}
+  button.warn{background:#e07a5f;}
+  button.mini{padding:4px 8px;font-size:13px;box-shadow:0 2px 0 rgba(0,0,0,.12);}
+
+  #overview{max-width:1000px;margin:0 auto;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:22px;}
+  .card{background:var(--paper);border-radius:16px;padding:16px 14px 18px;cursor:pointer;text-align:center;
+    box-shadow:0 8px 22px var(--shadow);border:3px solid #fff;position:relative;transform:rotate(var(--rot,0deg));
+    transition:transform .12s,box-shadow .12s;}
+  .card:hover{transform:rotate(0) translateY(-4px) scale(1.03);box-shadow:0 14px 30px var(--shadow);}
+  .card .avatar{width:118px;height:118px;border-radius:50%;object-fit:cover;margin:0 auto 10px;display:block;
+    border:4px solid var(--accent3);background:#eef3f8;}
+  .card .placeholder{width:118px;height:118px;border-radius:50%;margin:0 auto 10px;display:flex;align-items:center;
+    justify-content:center;font-size:44px;background:#eef3f8;border:4px dashed var(--line);}
+  .card .cname{font-size:21px;font-weight:bold;}
+  .card .cmeta{font-size:13px;opacity:.7;margin-top:3px;font-family:var(--pen-font);}
+  .pin{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-size:22px;}
+  .add-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+    border:3px dashed var(--accent2);background:#f5fffd;color:var(--accent2);font-size:20px;min-height:190px;}
+  .add-card .big{font-size:50px;}
+  .empty{text-align:center;padding:40px 20px;background:var(--paper);border-radius:20px;box-shadow:0 8px 22px var(--shadow);font-size:18px;}
+
+  #page{max-width:860px;margin:0 auto;display:none;}
+  .nav{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+  .nav .pageno{font-size:15px;opacity:.7;}
+  .sheet{background:linear-gradient(var(--line) 1px,transparent 1px);background-size:100% 36px;background-color:var(--paper);
+    border-radius:14px;box-shadow:0 12px 34px var(--shadow);padding:32px 28px 26px 66px;position:relative;overflow:hidden;}
+  .sheet::before{content:"";position:absolute;left:46px;top:0;bottom:0;width:2px;background:var(--margin);opacity:.6;}
+  .sheet::after{content:"";position:absolute;left:16px;top:22px;bottom:22px;width:14px;
+    background:radial-gradient(circle,rgba(0,0,0,.10) 4px,transparent 5px);background-size:14px 36px;background-repeat:repeat-y;}
+  .toprow{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap;margin-bottom:8px;}
+  .photo-zone{flex:0 0 auto;text-align:center;}
+  .photo-frame{width:150px;height:172px;border:3px solid #fff;border-radius:8px;background:#eef3f8;
+    box-shadow:0 6px 16px var(--shadow);overflow:hidden;display:flex;align-items:center;justify-content:center;
+    cursor:pointer;position:relative;transform:rotate(-3deg);}
+  .photo-frame::before{content:"";position:absolute;top:-12px;left:50%;transform:translateX(-50%) rotate(4deg);
+    width:90px;height:22px;background:rgba(43,179,163,.55);}
+  .photo-frame img{width:100%;height:100%;object-fit:cover;}
+  .photo-frame .hint{font-size:13px;opacity:.6;padding:8px;text-align:center;}
+  .photo-btns{margin-top:8px;display:flex;gap:6px;justify-content:center;}
+  .title-zone{flex:1 1 230px;min-width:230px;}
+  .title-zone label{font-size:13px;opacity:.7;}
+  .name-input{font-family:var(--hand2);font-size:30px;font-weight:bold;color:var(--ink);width:100%;border:none;
+    background:transparent;border-bottom:2px dashed var(--margin);padding:4px 2px;outline:none;}
+  .datestamp{font-family:var(--pen-font);font-size:18px;color:var(--accent);margin-top:6px;}
+
+  .qa-item{margin:8px 0 14px;padding:1px 0;}
+  .q-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .q-label{flex:1;font-family:var(--hand);font-weight:bold;font-size:16px;color:var(--ink);
+    line-height:1.3;opacity:.92;white-space:normal;overflow-wrap:anywhere;}
+  .a-input{display:block;width:100%;margin-top:3px;font-family:var(--pen-font);font-size:21px;color:var(--pen);
+    background:transparent;border:none;border-bottom:2px dashed var(--margin);outline:none;
+    line-height:30px;resize:none;overflow:hidden;padding:0 2px 3px;}
+  .a-input::placeholder{color:#b9c2d0;}
+  .row-tools{display:flex;gap:4px;flex:0 0 auto;}
+  .qa-tools{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 4px;}
+
+  .mission{margin-top:16px;background:#eefcf8;border:2px dashed var(--accent2);border-radius:14px;padding:12px 14px;}
+  .mission h3{margin:0 0 6px;font-size:18px;display:flex;align-items:center;gap:8px;}
+  .mission .mtext{font-family:var(--pen-font);font-size:22px;color:#10796d;line-height:1.2;}
+  .mission .mfoot{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:8px;}
+  .mission .ptitle{font-size:15px;font-weight:bold;}
+  .proof-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin:10px 0 2px;}
+  .proof-list:empty{display:none;}
+  .proof-item{position:relative;background:#fff;border-radius:10px;padding:4px;box-shadow:0 3px 10px var(--shadow);}
+  .proof-item.video,.proof-item.audio{grid-column:span 2;}
+  .proof-item img,.proof-item video{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:7px;margin:0;max-height:none;}
+  .proof-item.video video{aspect-ratio:16/9;object-fit:contain;}
+  .proof-item audio{margin:6px 0;}
+  .proof-item .del{position:absolute;top:-8px;right:-8px;}
+  .cam-card{background:var(--paper);border-radius:20px;padding:14px;max-width:620px;width:100%;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.35);}
+  .cam-title{font-family:var(--hand2);font-size:24px;}
+  #camVideo{width:100%;max-height:62vh;background:#000;border-radius:12px;margin-top:8px;object-fit:cover;}
+  #camVideo.mirror{transform:scaleX(-1);}
+  .cam-status{min-height:24px;margin-top:6px;font-family:var(--pen-font);font-size:19px;color:var(--accent);}
+  .cam-btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:8px;}
+  .mission label{font-size:15px;display:flex;gap:6px;align-items:center;cursor:pointer;}
+
+  .wish{margin-top:16px;background:#fff7fa;border:2px solid var(--margin);border-radius:14px;padding:12px 14px;box-shadow:0 4px 14px var(--shadow);}
+  .wish h3{margin:0 0 6px;font-size:18px;}
+  .wish textarea{width:100%;min-height:90px;font-family:var(--pen-font);font-size:22px;color:var(--accent);
+    background:transparent;border:none;outline:none;line-height:30px;resize:vertical;}
+
+  .media{margin-top:16px;background:#fff;border-radius:14px;padding:14px;box-shadow:0 4px 14px var(--shadow);}
+  .media h3{margin:0 0 10px;font-size:17px;display:flex;gap:8px;align-items:center;}
+  .media-block{margin-bottom:14px;}
+  .rec-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .rec-dot{width:12px;height:12px;border-radius:50%;background:var(--accent);display:inline-block;animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+  audio,video{width:100%;margin-top:10px;border-radius:10px;}
+  video{max-height:300px;background:#000;}
+  .rec-status{font-size:14px;opacity:.75;font-family:var(--pen-font);}
+
+  .page-actions{display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap;}
+  .saved-flash{text-align:center;color:var(--accent2);font-weight:bold;height:20px;margin-top:8px;opacity:0;transition:opacity .3s;}
+  .saved-flash.show{opacity:1;}
+  input[type=file]{display:none;}
+  .hidden{display:none!important;}
+  /* Fremde Seiten: nur ansehen, Bearbeitungsknoepfe ausblenden */
+  #page.readonly .sheet button, #page.readonly .photo-frame{pointer-events:none;}
+  #page.readonly .sheet button{display:none;}
+  #page.readonly .a-input:disabled, #page.readonly .name-input:disabled, #page.readonly textarea:disabled{color:inherit;-webkit-text-fill-color:currentColor;opacity:1;}
+  #page.readonly .a-input{color:var(--pen);-webkit-text-fill-color:var(--pen);}
+  #page.readonly #f_wish{color:var(--accent);-webkit-text-fill-color:var(--accent);}
+  .banner{max-width:900px;margin:0 auto 16px;background:#fff3bf;border:2px solid #ffd166;border-radius:12px;
+    padding:11px 15px;font-size:14px;line-height:1.4;color:#5c4d00;}
+  .banner.err{background:#ffe3e3;border-color:#ff8787;color:#7a1f1f;}
+  /* Admin: Feiern verwalten */
+  .admin-title{font-family:var(--hand2);font-size:clamp(26px,5.5vw,42px);margin:0;text-shadow:2px 2px 0 #fff,4px 4px 0 var(--accent2);}
+  .events-wrap{max-width:900px;margin:0 auto;display:grid;gap:18px;}
+  .ev-card{background:var(--paper);border-radius:16px;padding:14px 16px;box-shadow:0 8px 22px var(--shadow);border:3px solid #fff;
+    display:flex;gap:12px;align-items:center;flex-wrap:wrap;}
+  .ev-card .ev-main{flex:1 1 240px;}
+  .ev-card .ev-name{font-size:21px;font-weight:bold;}
+  .ev-card .ev-meta{font-size:14px;opacity:.75;}
+  .ev-card code{font-family:var(--pen-font);font-size:18px;color:var(--pen);background:#fff;padding:0 6px;border-radius:6px;}
+  .ev-card .ev-btns{display:flex;gap:6px;flex-wrap:wrap;}
+  .badge{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;background:#d6f8e0;color:#14532d;margin-left:6px;vertical-align:middle;}
+  .badge.closed{background:#fff0c2;color:#5c4d00;}
+  .badge.archived{background:#e5e7eb;color:#374151;}
+  .ev-form{background:#fff;border-radius:16px;padding:16px;box-shadow:0 8px 22px var(--shadow);display:grid;gap:10px;}
+  .ev-form h3{margin:0;}
+  .ev-form label{display:grid;gap:3px;font-size:14px;}
+  .ev-form input,.ev-form select{font-family:var(--hand);font-size:18px;padding:8px 10px;border:2px dashed var(--line);border-radius:10px;background:#fff;color:var(--ink);}
+  .ev-form h4{margin:8px 0 0;font-size:17px;}
+  .ce-hint{margin:0;font-size:14px;opacity:.8;line-height:1.4;}
+  .ce-list{display:grid;gap:6px;}
+  .ce-row{display:flex;gap:8px;align-items:center;}
+  .ce-row input{flex:1;min-width:0;font-size:16px;padding:6px 10px;}
+  .ce-stat{flex:0 0 auto;font-size:12px;opacity:.65;white-space:nowrap;}
+  @media (max-width:560px){ .ce-row{flex-wrap:wrap;} .ce-stat{order:3;width:100%;} }
+  .ev-form-btns{display:flex;gap:8px;flex-wrap:wrap;}
+  footer{text-align:center;margin-top:36px;font-size:13px;opacity:.55;line-height:1.5;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginOverlay" class="overlay">
+  <div class="login-card">
+    <div class="big">🔒📖</div>
+    <h2>Geheimer Zugang</h2>
+    <p>Bitte gib den Code ein, den du bekommen hast.</p>
+    <input id="codeInput" type="password" placeholder="Geheim-Code" autocomplete="off">
+    <div class="login-err" id="loginErr"></div>
+    <button onclick="doLogin()">Eintreten 🚪</button>
+  </div>
+</div>
+
+<!-- KAMERA -->
+<div id="camOverlay" class="overlay hidden">
+  <div class="cam-card">
+    <div class="cam-title" id="camTitle"></div>
+    <video id="camVideo" playsinline muted autoplay></video>
+    <div class="cam-status" id="camStatus"></div>
+    <div class="cam-btns">
+      <button id="camShotBtn" onclick="camShot()">📸 Auslösen</button>
+      <button id="camRecBtn" onclick="camRecord()">⏺ Aufnahme starten</button>
+      <button class="ghost" onclick="flipCamera()">🔄 Kamera wechseln</button>
+      <button class="ghost" onclick="camFallback()">📂 Datei wählen</button>
+      <button class="warn" onclick="closeCamera()">✕ Abbrechen</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+
+<!-- ADMIN: alle Feiern -->
+<div id="eventsView" class="hidden">
+  <div class="cover">
+    <div class="tape"></div>
+    <h1 class="admin-title">📚 Alle Feiern</h1>
+    <p>Jede Feier hat ihren eigenen Gäste-Code. Gäste sehen nur die Seiten ihrer Feier.</p>
+  </div>
+  <div id="eventsBanner" class="banner hidden"></div>
+  <div class="status" id="eventsStatus"></div>
+  <div class="events-wrap">
+    <div id="eventList"></div>
+    <div class="ev-form hidden" id="contentEditor">
+      <h3 id="ceTitle"></h3>
+      <p class="ce-hint">Neue Gästeseiten bekommen zufällig Fragen und eine Mission aus diesen Listen.
+        Bereits ausgefüllte Seiten bleiben, wie sie sind. <span id="ceMode"></span></p>
+      <h4>🎯 Missionen (<span id="ceTasksCount"></span>)</h4>
+      <div id="ceTasks" class="ce-list"></div>
+      <div><button type="button" class="mini secondary" onclick="addContent('tasks')">➕ Neue Mission</button></div>
+      <h4>❓ Fragen (<span id="ceQuestionsCount"></span>)</h4>
+      <div id="ceQuestions" class="ce-list"></div>
+      <div><button type="button" class="mini secondary" onclick="addContent('questions')">➕ Neue Frage</button></div>
+      <div class="ev-form-btns">
+        <button type="button" onclick="saveContent(false)">💾 Speichern</button>
+        <button type="button" class="ghost" onclick="closeContent()">Abbrechen</button>
+        <button type="button" class="ghost" onclick="saveContent(true)">↺ Standard-Listen nutzen</button>
+      </div>
+    </div>
+    <form class="ev-form" id="evForm" onsubmit="saveEvent(event)">
+      <h3 id="evFormTitle">➕ Neue Feier anlegen</h3>
+      <input type="hidden" id="ev_id">
+      <label>Titel auf dem Deckel<input id="ev_title" maxlength="80" required placeholder="z. B. Lenas 30. Geburtstag"></label>
+      <label>Anlass<select id="ev_occasion"></select></label>
+      <label>Gäste-Code<input id="ev_code" maxlength="60" required minlength="4" placeholder="z. B. LenaWird30"></label>
+      <label>Status<select id="ev_status">
+        <option value="open">offen – Gäste können schreiben</option>
+        <option value="closed">abgeschlossen – Gäste können nur noch ansehen</option>
+        <option value="archived">archiviert – Gäste-Code gesperrt</option>
+      </select></label>
+      <div class="ev-form-btns">
+        <button type="submit">💾 Speichern</button>
+        <button type="button" class="ghost" onclick="resetEventForm()">Abbrechen</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- EINE FEIER -->
+<div id="bookView">
+  <div class="cover">
+    <div class="tape"></div>
+    <div class="confetti" id="confetti"></div>
+    <input class="title-input" id="coverTitle" placeholder="Titel…" readonly>
+    <p id="coverText"></p>
+  </div>
+
+  <div id="banner" class="banner hidden"></div>
+  <div class="status" id="status"></div>
+
+  <div class="toolbar">
+    <button id="btnBack" class="ghost hidden" onclick="backToEvents()">← Alle Feiern</button>
+    <button id="btnNew" onclick="newPage()">➕ Neue Seite</button>
+    <button class="ghost" onclick="loadList()">🔄 Aktualisieren</button>
+    <button class="secondary" onclick="openBook()">📖 Buch ansehen / drucken</button>
+    <button id="btnExport" class="gold hidden" onclick="exportZip()">⬇️ Export (ZIP)</button>
+  </div>
+
+  <section id="overview">
+    <div id="grid" class="grid"></div>
+    <div id="emptyState" class="empty hidden">In dieser Feier gibt es keine Seiten.</div>
+  </section>
+
+  <section id="page">
+    <div class="nav">
+      <button class="ghost" onclick="showOverview()">← Übersicht</button>
+      <span class="pageno" id="pageNo"></span>
+      <div><button class="ghost" onclick="prevPage()">◀</button> <button class="ghost" onclick="nextPage()">▶</button></div>
+    </div>
+
+    <div class="sheet">
+      <div class="toprow">
+        <div class="photo-zone">
+          <div class="photo-frame" id="photoFrame" onclick="photoFile.click()">
+            <span class="hint" id="photoHint">📷<br>Foto hier<br>einkleben</span>
+            <img id="photoImg" class="hidden" alt="Foto">
+          </div>
+          <input type="file" id="photoFile" accept="image/*" onchange="onPhoto(event)">
+          <div class="photo-btns">
+            <button class="mini" onclick="takePhoto()">📸 Kamera</button>
+            <button class="mini secondary" onclick="photoFile.click()">📂 Wählen</button>
+            <button class="mini warn" onclick="removePhoto()">✕</button>
+          </div>
+        </div>
+        <div class="title-zone">
+          <label>Diese Seite ist von:</label>
+          <input class="name-input" id="f_name" placeholder="Dein Name…" oninput="onNameInput()">
+          <div class="datestamp" id="dateStamp"></div>
+        </div>
+      </div>
+
+      <div id="items"></div>
+      <div class="qa-tools">
+        <button class="mini gold" onclick="rerollEmpty()">🎲 Andere Fragen würfeln</button>
+        <button class="mini secondary" onclick="addQuestion()">➕ Noch eine Frage</button>
+      </div>
+
+      <div class="mission">
+        <h3>🎯 Deine Mini-Mission <span style="font-size:13px;opacity:.7">(optional, aber macht Spaß!)</span></h3>
+        <div class="mtext" id="missionText"></div>
+        <div class="proof-list" id="proofList"></div>
+        <div class="mfoot">
+          <span class="ptitle">Beweis festhalten:</span>
+          <button class="mini" onclick="proofPhoto()">📸 Foto</button>
+          <button class="mini" onclick="proofVideo()">🎥 Video</button>
+          <button class="mini" id="proofRecBtn" onclick="toggleProofRecord()">🎤 Sprachnachricht</button>
+          <button class="mini ghost" onclick="proofFile.click()">📂 Aus Galerie</button>
+          <input type="file" id="proofFile" accept="image/*,video/*,audio/*" multiple onchange="onProofFile(event)">
+          <span class="rec-status" id="proofStatus"></span>
+        </div>
+        <div class="mfoot">
+          <button class="mini gold" onclick="rerollTask()">🎲 Andere Mission</button>
+          <label><input type="checkbox" id="missionDone" onchange="onTaskDone()"> erledigt ✓</label>
+        </div>
+      </div>
+
+      <div class="wish">
+        <h3 id="wishTitle"></h3>
+        <textarea id="f_wish" oninput="onWishInput()"></textarea>
+      </div>
+
+      <div class="media">
+        <div class="media-block">
+          <h3>🎤 Sprachnachricht</h3>
+          <div class="rec-controls">
+            <button class="mini" id="recBtn" onclick="toggleRecord()">● Aufnehmen</button>
+            <button class="mini ghost" onclick="audioFile.click()">📂 Audio hochladen</button>
+            <input type="file" id="audioFile" accept="audio/*" onchange="onAudioUpload(event)">
+            <span class="rec-status" id="recStatus"></span>
+          </div>
+          <audio id="audioPlayer" class="hidden" controls></audio>
+          <div style="margin-top:8px"><button class="mini warn hidden" id="audioDel" onclick="removeAudio()">Sprachnachricht löschen</button></div>
+        </div>
+        <div class="media-block">
+          <h3 id="videoTitle"></h3>
+          <div class="rec-controls">
+            <button class="mini" onclick="recordVideo()">🎥 Aufnehmen</button>
+            <button class="mini ghost" onclick="videoFile.click()">📂 Video hochladen</button>
+            <input type="file" id="videoFile" accept="video/*" onchange="onVideoUpload(event)">
+            <span class="rec-status" id="vidStatus"></span>
+          </div>
+          <video id="videoPlayer" class="hidden" controls playsinline></video>
+          <div style="margin-top:8px"><button class="mini warn hidden" id="videoDel" onclick="removeVideo()">Video löschen</button></div>
+        </div>
+      </div>
+
+      <div class="page-actions">
+        <button onclick="saveNow()">💾 Speichern</button>
+        <button class="warn" onclick="deletePage()">🗑️ Seite löschen</button>
+      </div>
+      <div class="saved-flash" id="savedFlash">✓ Gespeichert!</div>
+    </div>
+  </section>
+
+  <footer>
+    <span id="footerText"></span>
+  </footer>
+</div>
+</div>
+
+<script>
+/* ===== Fehler sichtbar machen ===== */
+window.onerror=function(msg){ var b=document.getElementById("banner"); if(b){ b.textContent="Es ist ein Fehler aufgetreten: "+msg; b.className="banner err"; } return false; };
+
+/* ===== Anlässe: Texte, Fragen und Missionen ===== */
+// Fragen über den Gast selbst – passen zu jedem Anlass
+const ABOUT_ME=[
+  "Mein Spitzname","Geburtstag","Wohnort","Sternzeichen",
+  "Lieblingsfarbe","Lieblingstier","Lieblingsessen","Lieblingsgetränk","Lieblingseis",
+  "Lieblingsmusik / Lieblingslied","Lieblingsfilm oder -serie","Lieblingsbuch","Lieblingsspiel",
+  "Meine Hobbys","Das kann ich richtig gut","Das mag ich gar nicht",
+  "Mein Traumberuf","Mein größter Traum","Da will ich unbedingt mal hin",
+  "Wenn ich ein Tier wäre, dann...","Meine geheime Superkraft wäre...",
+  "Auf eine einsame Insel nehme ich mit...","Mein Lieblingsplatz",
+  "Mein Lebensmotto","Drei Worte über mich","Mein größtes Talent",
+  "So bringe ich andere zum Lachen","Mein peinlichster Moment","So sehe ich in 10 Jahren aus"
+];
+// Fragen an eine Person (du-Form)
+const ABOUT_YOU=[
+  "So lange kennen wir uns schon","Unsere schönste gemeinsame Erinnerung",
+  "In drei Worten bist du...","Das mag ich besonders an dir",
+  "Dieses Erlebnis mit dir vergesse ich nie","Dafür bin ich dir dankbar",
+  "Unser Insider / Running Gag","Wenn ich an dich denke, muss ich lächeln, weil...",
+  "Das will ich unbedingt noch mit dir erleben"
+];
+// Missionen, die zu jedem Anlass passen
+const COMMON_TASKS=[
+  "Macht zusammen die albernste Grimasse und haltet sie als Foto fest.",
+  "Umarmt euch und lasst jemanden ein Foto davon machen.",
+  "Stoßt zusammen an und macht ein Prost-Foto.",
+  "Nimm eine Sprachnachricht mit eurem größten gemeinsamen Insider-Witz auf.",
+  "Tanzt zusammen einen Song lang und filmt einen kurzen Moment.",
+  "Erzähl in der Sprachnachricht eure lustigste gemeinsame Geschichte.",
+  "Macht ein 'Damals und heute'-Foto nach, wenn ihr ein altes Bild habt.",
+  "Macht ein Foto, auf dem ihr beide in die Kamera zwinkert.",
+  "Nenn drei Dinge, die ihr unbedingt noch zusammen erleben wollt.",
+  "Macht ein lustiges Verkleidungs- oder Hut-Foto zusammen."
+];
+const OCCASIONS={
+  birthday:{ label:"Geburtstag", icon:"🎂",
+    cover:"🎂 Jeder Gast bekommt eine eigene Seite – schreib rein, kleb ein Foto dazu, sprich oder filme eine Nachricht! 🎉",
+    wishTitle:"🎉 Das wünsche ich dir zum Geburtstag:", wishPh:"Schreib hier deine Geburtstagswünsche…",
+    videoTitle:"🎥 Video (z. B. mit dem Geburtstagskind)",
+    footer:"Das Geburtstagskind sieht am Ende alle Seiten zusammen. 🎁",
+    questions:ABOUT_YOU.concat(["Mein Tipp für dein neues Lebensjahr"]),
+    tasks:COMMON_TASKS.concat([
+      "Mach ein kurzes Video oder Selfie zusammen mit dem Geburtstagskind und lad es hier hoch!",
+      "Nimm hier eine Sprachnachricht auf und sing ein kurzes Ständchen.",
+      "Male ein kleines Bild für das Geburtstagskind und fotografiere es.",
+      "Filmt einen kurzen Clip, in dem ihr zusammen 'Happy Birthday' ruft.",
+      "Gib dem Geburtstagskind ein Versprechen für das neue Lebensjahr."]) },
+  wedding:{ label:"Hochzeit", icon:"💍",
+    cover:"💍 Jeder Gast bekommt eine eigene Seite – schreibt dem Brautpaar, klebt ein Foto dazu, sprecht oder filmt eine Nachricht! 🥂",
+    wishTitle:"💐 Das wünsche ich euch:", wishPh:"Schreib hier deine Wünsche für das Brautpaar…",
+    videoTitle:"🎥 Video (z. B. mit dem Brautpaar)",
+    footer:"Das Brautpaar sieht am Ende alle Seiten zusammen. 💍",
+    questions:[
+      "So lange kenne ich euch schon","Meine schönste Erinnerung mit euch",
+      "In drei Worten seid ihr...","Das mag ich besonders an euch als Paar",
+      "So habe ich von eurer Verlobung erfahren","Euer Insider / Running Gag",
+      "Mein Tipp für eine glückliche Ehe","Darauf freue ich mich mit euch in Zukunft",
+      "Das wünsche ich euch für die nächsten 50 Jahre"],
+    tasks:COMMON_TASKS.concat([
+      "Mach ein Selfie mit dem Brautpaar und lad es hier hoch!",
+      "Nimm eine Sprachnachricht mit deinem besten Ehe-Tipp auf.",
+      "Male ein kleines Bild für das Brautpaar und fotografiere es.",
+      "Filmt einen kurzen Clip, in dem ihr zusammen 'Hoch lebe das Brautpaar!' ruft.",
+      "Stoß mit dem Brautpaar an und haltet den Moment als Foto fest."]) },
+  farewell:{ label:"Abschied", icon:"👋",
+    cover:"👋 Jeder Gast bekommt eine eigene Seite – schreib zum Abschied rein, kleb ein Foto dazu, sprich oder filme eine Nachricht! 💛",
+    wishTitle:"🍀 Das wünsche ich dir für deinen Weg:", wishPh:"Schreib hier deine Abschiedsworte…",
+    videoTitle:"🎥 Video (z. B. ein Abschiedsgruß)",
+    footer:"Am Ende gibt es alle Seiten zusammen als Abschiedsbuch. 👋",
+    questions:ABOUT_YOU.concat(["Du wirst mir fehlen, weil...","Mein Tipp für deinen neuen Lebensabschnitt","Hier besuche ich dich als Erstes"]),
+    tasks:COMMON_TASKS.concat([
+      "Mach ein Abschiedsselfie zusammen und lad es hier hoch!",
+      "Nimm eine Sprachnachricht auf mit dem, was du nie vergessen wirst.",
+      "Male ein kleines Bild als Andenken und fotografiere es.",
+      "Filmt einen kurzen Clip, in dem ihr euch gegenseitig viel Glück wünscht."]) },
+  party:{ label:"Feier / Sonstiges", icon:"🎉",
+    cover:"🎉 Jeder Gast bekommt eine eigene Seite – schreib rein, kleb ein Foto dazu, sprich oder filme eine Nachricht! 📖",
+    wishTitle:"💌 Das möchte ich dir noch sagen:", wishPh:"Schreib hier deine Nachricht…",
+    videoTitle:"🎥 Video (z. B. vom besten Moment)",
+    footer:"Am Ende gibt es alle Seiten zusammen als Buch. 📖",
+    questions:ABOUT_YOU.concat(["Mein Highlight heute"]),
+    tasks:COMMON_TASKS.concat([
+      "Mach ein Selfie mit dem Gastgeber oder der Gastgeberin und lad es hier hoch!",
+      "Filmt einen kurzen Clip vom schönsten Moment der Feier."]) }
+};
+const DEFAULT_COUNT=10;
+
+/* ===== Zustand ===== */
+let state={ event:null, events:[], pages:[] };
+let current=-1;
+let isAdmin=false;
+
+/* ===== Helfer ===== */
+function el(tag,cls){ const e=document.createElement(tag); if(cls) e.className=cls; return e; }
+function escapeHtml(s){ return (s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+function shuffle(a){ const r=a.slice(); for(let i=r.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [r[i],r[j]]=[r[j],r[i]]; } return r; }
+function occ(){ return (state.event&&OCCASIONS[state.event.occasion])||OCCASIONS.party; }
+function defaultQuestions(o){ return ABOUT_ME.concat((OCCASIONS[o]||OCCASIONS.party).questions); }
+function defaultTasks(o){ return (OCCASIONS[o]||OCCASIONS.party).tasks; }
+function pool(){ return (state.event&&state.event.questions)||defaultQuestions(state.event&&state.event.occasion); }
+function usedQuestions(p){ return new Set((p.items||[]).map(it=>(it.q||"").trim())); }
+function randomQuestion(p){ const all=pool(), used=usedQuestions(p); const free=all.filter(q=>!used.has(q)); const arr=free.length?free:all; return arr[Math.floor(Math.random()*arr.length)]; }
+function pickQuestions(n){ return shuffle(pool()).slice(0,n).map(q=>({q:q,a:""})); }
+function randomTask(){ const t=(state.event&&state.event.tasks)||defaultTasks(state.event&&state.event.occasion); return t[Math.floor(Math.random()*t.length)]; }
+function todayStr(){ try{ return new Date().toLocaleDateString("de-DE",{day:"2-digit",month:"long",year:"numeric"}); }catch(e){ return ""; } }
+function showBanner(t,isErr){ const b=document.getElementById("banner"); b.textContent=t; b.className="banner"+(isErr?" err":""); }
+function hideBanner(){ document.getElementById("banner").className="banner hidden"; }
+// Der Admin nennt bei jeder Anfrage die Feier, Gäste sind serverseitig fest an ihre gebunden
+function eventParam(){ return state.event?"&event="+encodeURIComponent(state.event.id):""; }
+function mediaUrl(name){ return "api.php?action=media"+eventParam()+"&f="+encodeURIComponent(name); }
+function tokenFor(id){ try{ return id?localStorage.getItem("fb_token_"+id):null; }catch(e){ return null; } }
+function eventOpen(){ return !!state.event&&state.event.status==="open"; }
+function canAdd(){ return isAdmin||eventOpen(); }
+
+/* ===== Server-Kommunikation ===== */
+async function api(action,data,keepalive){
+  let r;
+  try{ r=await fetch("api.php?action="+action+eventParam(),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data||{}),keepalive:!!keepalive}); }
+  catch(e){ return {error:"network"}; }
+  let txt=""; try{ txt=await r.text(); }catch(e){ return {error:"network"}; }
+  try{ return JSON.parse(txt); }catch(e){ return {error:"bad_response", status:(r?r.status:0)}; }
+}
+let uploadsRunning=0;
+function uploadBlob(blob,statusEl){
+  uploadsRunning++;
+  return new Promise((resolve,reject)=>{
+    const fd=new FormData(); fd.append("file",blob,(blob.name||"datei"));
+    const x=new XMLHttpRequest(); x.open("POST","api.php?action=upload"+eventParam());
+    if(statusEl) statusEl.textContent="lädt hoch...";
+    x.upload.onprogress=e=>{ if(statusEl&&e.lengthComputable) statusEl.textContent="lädt hoch... "+Math.round(e.loaded/e.total*100)+" %"; };
+    x.onload=()=>{ let j; try{ j=JSON.parse(x.responseText); }catch(e){ j={error:"bad"}; }
+      if(statusEl) statusEl.textContent=j.ok?"fertig ✓":"Fehler beim Hochladen";
+      if(j.ok) resolve(j.name); else reject(new Error(j.error||"upload")); };
+    x.onerror=()=>{ if(statusEl) statusEl.textContent="Fehler beim Hochladen"; reject(new Error("network")); };
+    x.onloadend=()=>{ uploadsRunning--; };
+    x.send(fd);
+  });
+}
+
+/* ===== Browser-Verlauf: die Zurück-Taste führt durch die App statt sie zu verlassen ===== */
+let fromHistory=false, skipNextPop=false;
+function viewHash(v){
+  if(v.v==="events") return "#feiern";
+  if(v.v==="content") return "#feiern/fragen";
+  if(v.v==="page") return "#seite"+(v.page?"/"+v.page:"");
+  return "#uebersicht";
+}
+// mode: "push" (neuer Verlaufseintrag), "replace" (aktuellen ersetzen)
+function remember(v,mode){
+  if(fromHistory) return;
+  if(mode==="replace"||!history.state) history.replaceState(v,"",viewHash(v));
+  else history.pushState(v,"",viewHash(v));
+}
+async function applyView(v){
+  fromHistory=true;
+  try{
+    if(!v) return;
+    if(v.v==="events"||v.v==="content"){
+      if(!isAdmin) return;
+      collectCurrent(); await flushSave();
+      showEvents();
+      if(v.v==="content"){ await eventsLoaded; const ev=state.events.find(e=>e.id===v.ev); if(ev) await openContent(ev); }
+      return;
+    }
+    // Übersicht oder Seite einer Feier
+    if(isAdmin&&(!state.event||state.event.id!==v.ev)){
+      if(!state.events.length){ showEvents(); await eventsLoaded; }
+      const ev=state.events.find(e=>e.id===v.ev); if(!ev){ showEvents(); return; }
+      state.event=ev; await showBook();
+    }else if(document.getElementById("bookView").classList.contains("hidden")){ await showBook(); }
+    if(v.v==="page"){ await listLoaded; const i=state.pages.findIndex(p=>p.id&&p.id===v.page); if(i>=0){ if(i!==current) openPage(i); return; } }
+    if(current>=0) showOverview();
+  }finally{ fromHistory=false; }
+}
+window.addEventListener("popstate",e=>{
+  if(skipNextPop){ skipNextPop=false; return; }
+  // Zurück bei offener Kamera schließt nur die Kamera
+  if(!document.getElementById("camOverlay").classList.contains("hidden")){ closeCamera(true); return; }
+  applyView(e.state);
+});
+// Beim Verlassen: letzte Änderung noch absenden, bei laufendem Upload warnen
+window.addEventListener("pagehide",()=>{ collectCurrent(); if(timerPage){ clearTimeout(saveTimer); const p=timerPage; timerPage=null; doPush(p,true); } });
+window.addEventListener("beforeunload",e=>{ if(uploadsRunning>0||recording||cam.rec){ e.preventDefault(); e.returnValue=""; } });
+
+/* ===== Login ===== */
+async function doLogin(){
+  const code=(document.getElementById("codeInput").value||"").trim();
+  const errEl=document.getElementById("loginErr"); errEl.textContent="";
+  const j=await api("login",{code:code});
+  if(j.ok){ applyStatus(j); enterApp(); return; }
+  if(j.error==="network"){ errEl.textContent="Server nicht erreichbar. Bitte die Seite über deine Webserver-Adresse öffnen (https://.../freundebuch/), nicht die Datei direkt im Browser."; return; }
+  if(j.error==="bad_response"){ errEl.textContent="Der Server führt PHP nicht aus (Antwort war kein gültiges Ergebnis). Bitte über die Server-Adresse öffnen, nicht als lokale Datei."; return; }
+  if(j.error){ errEl.textContent="Server-Meldung: "+j.error; return; }
+  errEl.textContent="Falscher Code - versuch es nochmal.";
+  document.getElementById("codeInput").value="";
+}
+function applyStatus(j){ isAdmin=!!j.admin; state.event=j.event||null; }
+function enterApp(){
+  document.getElementById("loginOverlay").style.display="none";
+  document.getElementById("app").classList.remove("hidden");
+  const v=history.state;
+  // nach einem Neuladen dort weitermachen, wo man war
+  if(v&&(isAdmin||v.v==="page"||v.v==="book")&&(isAdmin||!v.ev||(state.event&&v.ev===state.event.id))){ applyView(v); return; }
+  if(isAdmin&&!state.event) showEvents(); else showBook();
+}
+function logoutButton(){
+  const out=el("button","mini ghost"); out.textContent="Abmelden";
+  out.onclick=async()=>{ collectCurrent(); await flushSave(); await api("logout"); location.reload(); };
+  return out;
+}
+function onTitleEdit(){
+  if(!isAdmin||!state.event) return;
+  clearTimeout(window._tt); const ev=state.event; ev.title=document.getElementById("coverTitle").value;
+  window._tt=setTimeout(()=>{ if(ev.title.trim()) api("settitle",{title:ev.title}); },600);
+}
+function renderStatus(){
+  const s=document.getElementById("status");
+  s.innerHTML="🔓 Angemeldet"+(isAdmin?" <b>(Admin)</b>":"")+" &nbsp;•&nbsp; "+escapeHtml(occ().label)+" &nbsp;•&nbsp; Seiten: "+state.pages.length+" ";
+  s.appendChild(logoutButton());
+}
+
+/* ===== Admin: Feiern verwalten ===== */
+const EVENT_ERRORS={ title:"Bitte gib einen Titel ein.", code_short:"Der Gäste-Code braucht mindestens 4 Zeichen.",
+  code_taken:"Diesen Code nutzt schon eine andere Feier (oder er ist der Admin-Code).", forbidden:"Nur mit dem Admin-Code möglich." };
+const STATUS_LABEL={ open:"offen", closed:"abgeschlossen", archived:"archiviert" };
+let eventsLoaded=Promise.resolve(), listLoaded=Promise.resolve();
+function showEvents(){
+  remember({v:"events"});
+  state.event=null; state.pages=[]; current=-1;
+  document.getElementById("bookView").classList.add("hidden");
+  document.getElementById("eventsView").classList.remove("hidden");
+  const s=document.getElementById("eventsStatus"); s.innerHTML="🔓 Angemeldet als <b>Admin</b> "; s.appendChild(logoutButton());
+  const sel=document.getElementById("ev_occasion");
+  if(!sel.options.length) Object.keys(OCCASIONS).forEach(k=>{ const o=el("option"); o.value=k; o.textContent=OCCASIONS[k].icon+" "+OCCASIONS[k].label; sel.appendChild(o); });
+  document.getElementById("contentEditor").classList.add("hidden");
+  document.getElementById("eventList").classList.remove("hidden");
+  document.getElementById("evForm").classList.remove("hidden");
+  resetEventForm(); eventsLoaded=loadEvents(); window.scrollTo(0,0);
+}
+async function loadEvents(){
+  const j=await api("events");
+  if(j.error==="auth"){ location.reload(); return; }
+  state.events=j.events||[];
+  const list=document.getElementById("eventList"); list.innerHTML="";
+  if(!state.events.length){ const e=el("div","empty"); e.innerHTML="Noch keine Feier angelegt 😊<br>Leg unten die erste an."; list.appendChild(e); }
+  state.events.forEach(ev=>{
+    const o=OCCASIONS[ev.occasion]||OCCASIONS.party;
+    const card=el("div","ev-card");
+    card.innerHTML='<div class="ev-main"><div class="ev-name">'+o.icon+" "+escapeHtml(ev.title)+
+      '<span class="badge '+ev.status+'">'+STATUS_LABEL[ev.status]+'</span></div>'+
+      '<div class="ev-meta">'+escapeHtml(o.label)+" · "+ev.pages+(ev.pages===1?" Seite":" Seiten")+
+      " · Gäste-Code: <code>"+escapeHtml(ev.code)+"</code></div></div>";
+    const btns=el("div","ev-btns");
+    const b=(txt,cls,fn)=>{ const x=el("button","mini "+cls); x.type="button"; x.textContent=txt; x.onclick=fn; btns.appendChild(x); };
+    b("📖 Öffnen","",()=>{ state.event=ev; showBook(); });
+    b("✏️ Bearbeiten","ghost",()=>editEvent(ev));
+    b("🎯 Fragen & Missionen","secondary",()=>openContent(ev));
+    b("⬇️ ZIP","gold",()=>{ location.href="api.php?action=export&event="+encodeURIComponent(ev.id); });
+    b("🗑️","warn",()=>deleteEvent(ev));
+    card.appendChild(btns); list.appendChild(card);
+  });
+}
+function resetEventForm(){
+  document.getElementById("evFormTitle").textContent="➕ Neue Feier anlegen";
+  ["ev_id","ev_title","ev_code"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("ev_occasion").value="birthday";
+  document.getElementById("ev_status").value="open";
+}
+function editEvent(ev){
+  document.getElementById("evFormTitle").textContent="✏️ Feier bearbeiten";
+  document.getElementById("ev_id").value=ev.id;
+  document.getElementById("ev_title").value=ev.title;
+  document.getElementById("ev_code").value=ev.code;
+  document.getElementById("ev_occasion").value=ev.occasion;
+  document.getElementById("ev_status").value=ev.status;
+  document.getElementById("evForm").scrollIntoView({behavior:"smooth"});
+}
+async function saveEvent(e){
+  e.preventDefault();
+  const j=await api("event_save",{ id:document.getElementById("ev_id").value,
+    title:document.getElementById("ev_title").value, code:document.getElementById("ev_code").value,
+    occasion:document.getElementById("ev_occasion").value, status:document.getElementById("ev_status").value });
+  const b=document.getElementById("eventsBanner");
+  if(j.ok){ b.className="banner hidden"; resetEventForm(); loadEvents(); }
+  else { b.textContent=EVENT_ERRORS[j.error]||("Fehler: "+j.error); b.className="banner err"; }
+}
+async function deleteEvent(ev){
+  if(!confirm("Die Feier „"+ev.title+"“ mit allen "+ev.pages+" Seiten, Fotos, Sprachnachrichten und Videos endgültig löschen?\n\nTipp: Vorher mit ⬇️ ZIP sichern.")) return;
+  if(prompt("Zur Sicherheit: Tippe den Titel der Feier ab.")!==ev.title){ alert("Titel stimmt nicht – nichts gelöscht."); return; }
+  const j=await api("event_delete",{id:ev.id});
+  if(!j.ok) alert("Löschen hat nicht geklappt: "+j.error);
+  loadEvents();
+}
+/* ===== Admin: Fragen & Missionen einer Feier ===== */
+let content=null; // { ev, tasks:[], questions:[], stats }
+async function openContent(ev){
+  const pages=((await (await fetch("api.php?action=list&event="+encodeURIComponent(ev.id),{method:"POST",body:"{}"})).json()).pages)||[];
+  const stats={ tasks:{}, questions:{} };
+  pages.forEach(p=>{
+    const t=p.task&&p.task.text; if(t){ const x=stats.tasks[t]||(stats.tasks[t]={given:0,done:0}); x.given++; if(p.task.done||(p.task.media&&p.task.media.length)) x.done++; }
+    (p.items||[]).forEach(it=>{ if(it.a&&it.a.trim()) stats.questions[it.q]=(stats.questions[it.q]||0)+1; });
+  });
+  remember({v:"content",ev:ev.id});
+  content={ ev, stats, custom:!!(ev.tasks||ev.questions),
+    tasks:(ev.tasks||defaultTasks(ev.occasion)).slice(), questions:(ev.questions||defaultQuestions(ev.occasion)).slice() };
+  document.getElementById("eventList").classList.add("hidden");
+  document.getElementById("evForm").classList.add("hidden");
+  document.getElementById("contentEditor").classList.remove("hidden");
+  document.getElementById("ceTitle").textContent="🎯 Fragen & Missionen – "+ev.title;
+  document.getElementById("ceMode").textContent=content.custom
+    ? "Diese Feier nutzt eigene Listen."
+    : "Diese Feier nutzt noch die Standard-Listen für „"+(OCCASIONS[ev.occasion]||OCCASIONS.party).label+"“. Sobald du speicherst, gelten deine Listen.";
+  renderContent(); window.scrollTo(0,0);
+}
+function renderContent(){
+  const draw=(key,boxId,statFn,ph,max)=>{
+    const box=document.getElementById(boxId); box.innerHTML="";
+    content[key].forEach((txt,i)=>{
+      const row=el("div","ce-row");
+      const inp=el("input"); inp.value=txt; inp.maxLength=max; inp.placeholder=ph; inp.oninput=()=>{ content[key][i]=inp.value; };
+      const st=el("span","ce-stat"); st.textContent=statFn(txt);
+      const del=el("button","mini warn"); del.type="button"; del.textContent="✕"; del.title="Entfernen";
+      del.onclick=()=>{ content[key].splice(i,1); renderContent(); };
+      row.append(inp,st,del); box.appendChild(row);
+    });
+    document.getElementById(boxId+"Count").textContent=content[key].filter(t=>t.trim()).length;
+  };
+  draw("tasks","ceTasks",t=>{ const x=content.stats.tasks[t]; return x?x.given+"× vergeben · "+x.done+"× erledigt":""; },"z. B. Macht ein Selfie mit…",220);
+  draw("questions","ceQuestions",q=>{ const n=content.stats.questions[q]; return n?n+"× beantwortet":""; },"z. B. Mein Lieblingsfilm",120);
+}
+function addContent(key){
+  content[key].push(""); renderContent();
+  const rows=document.querySelectorAll("#"+(key==="tasks"?"ceTasks":"ceQuestions")+" input"); rows[rows.length-1].focus();
+}
+async function saveContent(useDefaults){
+  if(useDefaults&&!confirm("Eigene Fragen und Missionen verwerfen und wieder die Standard-Listen nutzen?")) return;
+  const clean=l=>l.map(t=>t.trim()).filter(Boolean);
+  const tasks=clean(content.tasks), questions=clean(content.questions);
+  if(!useDefaults&&(!tasks.length||questions.length<3)){ alert("Bitte mindestens eine Mission und drei Fragen behalten."); return; }
+  const j=await api("event_content",useDefaults?{id:content.ev.id,questions:null,tasks:null}:{id:content.ev.id,questions,tasks});
+  if(!j.ok){ alert("Speichern hat nicht geklappt: "+j.error); return; }
+  closeContent();
+  const b=document.getElementById("eventsBanner"); b.textContent="✓ Fragen & Missionen für „"+content.ev.title+"“ gespeichert. Neue Gästeseiten nutzen sie ab sofort."; b.className="banner";
+}
+function closeContent(){
+  if(history.state&&history.state.v==="content"){ history.back(); return; } // zurück zur Liste
+  document.getElementById("contentEditor").classList.add("hidden");
+  document.getElementById("eventList").classList.remove("hidden");
+  document.getElementById("evForm").classList.remove("hidden");
+  loadEvents();
+}
+
+async function backToEvents(){ collectCurrent(); await flushSave(); showEvents(); }
+
+/* ===== Eine Feier anzeigen ===== */
+function showBook(){
+  const o=occ(), ev=state.event;
+  remember({v:"book",ev:ev.id});
+  current=-1; state.pages=[];
+  document.getElementById("eventsView").classList.add("hidden");
+  document.getElementById("bookView").classList.remove("hidden");
+  document.getElementById("page").style.display="none";
+  document.getElementById("overview").style.display="block";
+  const t=document.getElementById("coverTitle"); t.value=ev.title||""; t.readOnly=!isAdmin;
+  document.title=(ev.title||"Freundebuch");
+  document.getElementById("coverText").textContent=o.cover;
+  document.getElementById("wishTitle").textContent=o.wishTitle;
+  document.getElementById("f_wish").placeholder=o.wishPh;
+  document.getElementById("videoTitle").textContent=o.videoTitle;
+  document.getElementById("footerText").textContent=o.footer;
+  document.getElementById("btnBack").classList.toggle("hidden",!isAdmin);
+  document.getElementById("btnExport").classList.toggle("hidden",!isAdmin);
+  document.getElementById("btnNew").classList.toggle("hidden",!canAdd());
+  if(ev.status!=="open") showBanner(isAdmin
+    ? "Diese Feier ist "+STATUS_LABEL[ev.status]+". Gäste können nichts mehr ändern, du als Admin schon."
+    : "Diese Feier ist abgeschlossen. Du kannst alle Seiten ansehen, aber nichts mehr ändern.");
+  else hideBanner();
+  confetti(o.icon);
+  renderStatus(); renderGrid(); listLoaded=loadList(); window.scrollTo(0,0);
+  return listLoaded;
+}
+function openBook(){ window.open("api.php?action=book"+eventParam(),"_blank"); }
+function exportZip(){ if(state.event) location.href="api.php?action=export"+eventParam(); }
+
+/* ===== Liste laden ===== */
+async function loadList(){
+  collectCurrent(); await flushSave();
+  const openId=current>=0?state.pages[current].id:null;
+  const j=await api("list",{});
+  if(j.error==="auth"||j.error==="no_event"){ location.reload(); return; }
+  state.pages=(j.pages||[]).map(normalizePage);
+  if(typeof j.admin==="boolean") isAdmin=j.admin;
+  if(j.event&&state.event) Object.assign(state.event,j.event);
+  renderStatus();
+  if(current>=0){ const i=state.pages.findIndex(p=>p.id===openId); current=-1; if(i>=0) openPage(i,"replace"); else showOverview(); }
+  else renderGrid();
+}
+function normalizePage(p){
+  return { id:p.id||null, name:p.name||"", photo:p.photo||null, audio:p.audio||null, video:p.video||null,
+    date:p.date||todayStr(), wish:p.wish||"",
+    task:(p.task&&typeof p.task==="object")?{text:p.task.text||randomTask(),done:!!p.task.done,media:Array.isArray(p.task.media)?p.task.media.slice():[]}:{text:randomTask(),done:false,media:[]},
+    items:Array.isArray(p.items)?p.items.map(it=>({q:String(it.q||""),a:String(it.a||"")})):pickQuestions(DEFAULT_COUNT),
+    created:p.created||0 };
+}
+
+/* ===== Speichern (zum Server) ===== */
+let saveTimer=null, timerPage=null;
+function canEdit(p){ return isAdmin || (eventOpen() && (!p.id || !!tokenFor(p.id))); }
+function saveAll(){
+  collectCurrent(); if(current<0) return;
+  const p=state.pages[current];
+  if(timerPage && timerPage!==p) pushPage(timerPage); // Aenderungen der vorigen Seite nicht verlieren
+  clearTimeout(saveTimer); timerPage=p;
+  saveTimer=setTimeout(()=>{ timerPage=null; pushPage(p); },500);
+}
+function flushSave(){ if(timerPage){ clearTimeout(saveTimer); const p=timerPage; timerPage=null; return pushPage(p); } }
+function pushCurrent(){ if(current<0||current>=state.pages.length) return; return pushPage(state.pages[current]); }
+// Speichervorgaenge pro Seite nacheinander ausfuehren, sonst entstehen bei einer
+// neuen Seite (noch ohne ID) doppelte Eintraege auf dem Server.
+function pushPage(p){
+  if(!canEdit(p) || p.deleted) return Promise.resolve();
+  p._saving=(p._saving||Promise.resolve()).then(()=>doPush(p));
+  return p._saving;
+}
+async function doPush(p,keepalive){
+  if(p.deleted) return;
+  const payload={ id:p.id, name:p.name, date:p.date, wish:p.wish, photo:p.photo, audio:p.audio, video:p.video, task:p.task, items:p.items };
+  const j=await api("save",{page:payload, token:tokenFor(p.id)},keepalive);
+  if(j.ok){ if(!p.id){ p.id=j.id;
+      const h=history.state; if(h&&h.v==="page"&&!h.page&&isCurrent(p)) history.replaceState(Object.assign({},h,{page:p.id}),"",viewHash({v:"page",page:p.id})); } if(j.token){ try{ localStorage.setItem("fb_token_"+p.id, j.token); }catch(e){} } }
+  else if(j.error==="auth"){ location.reload(); }
+  else if(j.error==="closed"){ showBanner("Diese Feier ist abgeschlossen – Änderungen werden nicht mehr gespeichert.",true); }
+  else if(j.error==="forbidden"){ showBanner("Diese Seite gehört einem anderen Gerät und kann hier nicht geändert werden.",true); }
+  else { showBanner("Speichern hat nicht geklappt ("+j.error+"). Bitte gleich nochmal versuchen.",true); }
+}
+function saveNow(){
+  collectCurrent(); flushSave(); pushCurrent();
+  const f=document.getElementById("savedFlash"); f.classList.add("show"); setTimeout(()=>f.classList.remove("show"),1200);
+}
+
+/* ===== Uebersicht ===== */
+function showOverview(){
+  collectCurrent(); flushSave();
+  if(state.event) remember({v:"book",ev:state.event.id});
+  document.getElementById("page").style.display="none";
+  document.getElementById("overview").style.display="block";
+  current=-1; renderStatus(); renderGrid();
+}
+function renderGrid(){
+  const grid=document.getElementById("grid");
+  grid.innerHTML="";
+  if(canAdd()){ const add=el("div","card add-card"); add.innerHTML='<div class="big">➕</div><div>Neue Seite ausfüllen</div>'; add.onclick=newPage; grid.appendChild(add); }
+  document.getElementById("emptyState").classList.toggle("hidden",state.pages.length>0||canAdd());
+  const pins=["📌","🧷","⭐","🌟","🎀","🍭","🦄","🌈"];
+  state.pages.forEach((p,i)=>{
+    const card=el("div","card"); card.style.setProperty("--rot",((i%3)-1)*1.6+"deg");
+    const ans=(p.items||[]).find(it=>it.a&&it.a.trim());
+    const meta=ans?(ans.q+": "+ans.a):(p.wish?("🎉 "+p.wish):"");
+    card.innerHTML='<span class="pin">'+pins[i%pins.length]+'</span>'+
+      (p.photo?'<img class="avatar" src="'+mediaUrl(p.photo)+'" alt="">':'<div class="placeholder">🙂</div>')+
+      '<div class="cname">'+(escapeHtml(p.name)||"Ohne Namen")+'</div>'+
+      '<div class="cmeta">'+escapeHtml(meta.slice(0,60))+'</div>';
+    card.onclick=()=>openPage(i); grid.appendChild(card);
+  });
+}
+
+/* ===== Seite öffnen ===== */
+function openPage(i,mode){
+  collectCurrent(); flushSave(); current=i; const p=state.pages[i];
+  remember({v:"page",ev:state.event.id,page:p.id},mode);
+  document.getElementById("page").classList.toggle("readonly",!canEdit(p));
+  document.querySelectorAll("#page .sheet input, #page .sheet textarea").forEach(x=>{ x.disabled=!canEdit(p); });
+  document.getElementById("overview").style.display="none";
+  document.getElementById("page").style.display="block";
+  document.getElementById("pageNo").textContent="Seite "+(i+1)+" von "+state.pages.length;
+  document.getElementById("f_name").value=p.name||"";
+  document.getElementById("dateStamp").textContent="✎ "+(p.date||todayStr());
+  document.getElementById("f_wish").value=p.wish||"";
+  document.getElementById("missionText").textContent=p.task.text;
+  document.getElementById("missionDone").checked=!!p.task.done;
+  renderItems(p); renderProof(p);
+  const img=document.getElementById("photoImg"), hint=document.getElementById("photoHint");
+  if(p.photo){ img.src=mediaUrl(p.photo); img.classList.remove("hidden"); hint.classList.add("hidden"); }
+  else{ img.classList.add("hidden"); hint.classList.remove("hidden"); }
+  setAudioUI(p.audio); setVideoUI(p.video);
+  window.scrollTo(0,0);
+}
+function renderItems(p){
+  const wrap=document.getElementById("items"); wrap.innerHTML="";
+  p.items.forEach((it,idx)=>{
+    const item=el("div","qa-item");
+    const head=el("div","q-head");
+    const label=el("div","q-label"); label.textContent=it.q;
+    const dice=el("button","mini gold"); dice.type="button"; dice.textContent="🎲"; dice.title="Andere Frage";
+    dice.onclick=()=>{ it.q=randomQuestion(p); label.textContent=it.q; saveAll(); };
+    const del=el("button","mini warn"); del.type="button"; del.textContent="✕"; del.title="Frage entfernen";
+    del.onclick=()=>{ p.items.splice(idx,1); renderItems(p); saveAll(); };
+    const tools=el("div","row-tools"); tools.append(dice,del);
+    head.append(label,tools);
+    const a=el("textarea","a-input"); a.rows=1; a.value=it.a; a.placeholder="......................"; a.disabled=!canEdit(p);
+    a.addEventListener("input",()=>{ it.a=a.value; autoGrow(a); saveAll(); });
+    item.append(head,a); wrap.appendChild(item);
+    autoGrow(a);
+  });
+}
+function autoGrow(t){ t.style.height="auto"; t.style.height=t.scrollHeight+"px"; }
+function rerollEmpty(){ if(current<0)return; const p=state.pages[current]; p.items.forEach(it=>{ if(!it.a||!it.a.trim()) it.q=randomQuestion(p); }); renderItems(p); saveAll(); }
+function addQuestion(){ if(current<0)return; const p=state.pages[current]; p.items.push({q:randomQuestion(p),a:""}); renderItems(p); saveAll(); }
+function rerollTask(){ if(current<0)return; const p=state.pages[current]; p.task.text=randomTask(); p.task.done=false;
+  document.getElementById("missionText").textContent=p.task.text; document.getElementById("missionDone").checked=false; saveAll(); }
+function onTaskDone(){ if(current<0)return; state.pages[current].task.done=document.getElementById("missionDone").checked; saveAll(); }
+
+/* ===== sammeln ===== */
+function onNameInput(){ if(current>=0){ state.pages[current].name=document.getElementById("f_name").value; saveAll(); } }
+function onWishInput(){ if(current>=0){ state.pages[current].wish=document.getElementById("f_wish").value; saveAll(); } }
+function collectCurrent(){ if(current<0||current>=state.pages.length)return; const p=state.pages[current];
+  p.name=document.getElementById("f_name").value; p.wish=document.getElementById("f_wish").value; }
+
+/* ===== Neue Seite / löschen ===== */
+async function newPage(){
+  if(!canAdd()) return;
+  const p={ id:null, name:"", photo:null, audio:null, video:null, date:todayStr(), wish:"",
+    task:{text:randomTask(),done:false,media:[]}, items:pickQuestions(DEFAULT_COUNT), created:Date.now()/1000 };
+  state.pages.push(p);
+  openPage(state.pages.length-1);
+  await pushPage(p); // direkt anlegen, damit es eine ID + Bearbeitungsrecht gibt
+}
+async function deletePage(){
+  if(current<0)return; if(!confirm("Diese Seite wirklich löschen?")) return;
+  const p=state.pages[current];
+  if(p._saving) await p._saving; // neue Seite: erst die ID vom Server abwarten
+  if(p.id){ const j=await api("delete",{id:p.id, token:tokenFor(p.id)});
+    if(j.error==="forbidden"){ showBanner("Nur wer die Seite angelegt hat (oder der Admin) darf sie löschen.",true); return; } }
+  p.deleted=true; if(timerPage===p){ clearTimeout(saveTimer); timerPage=null; }
+  state.pages.splice(current,1); current=-1; showOverview();
+}
+function prevPage(){ if(current<0)return; let n=current-1; if(n<0)n=state.pages.length-1; openPage(n,"replace"); }
+function nextPage(){ if(current<0)return; let n=current+1; if(n>=state.pages.length)n=0; openPage(n,"replace"); }
+
+/* ===== Medien-Helfer ===== */
+const MAX_BYTES=80*1024*1024, MAX_PROOF=8, MAX_REC_SECONDS=60;
+// Bild verkleinern (spart Speicher und Upload-Zeit am Handy)
+function shrinkImage(file,max){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(file), im=new Image();
+    im.onload=()=>{ let w=im.width,h=im.height;
+      if(w>max||h>max){ const r=Math.min(max/w,max/h); w=Math.round(w*r); h=Math.round(h*r); }
+      const c=document.createElement("canvas"); c.width=w; c.height=h; c.getContext("2d").drawImage(im,0,0,w,h);
+      URL.revokeObjectURL(url);
+      c.toBlob(b=>b?res(new File([b],"foto.jpg",{type:"image/jpeg"})):rej(new Error("bild")),"image/jpeg",0.85); };
+    im.onerror=()=>{ URL.revokeObjectURL(url); rej(new Error("bild")); };
+    im.src=url;
+  });
+}
+function tooBig(file){ if(file.size>MAX_BYTES){ showBanner("Die Datei ist größer als 80 MB – bitte ein kürzeres Video nehmen.",true); return true; } return false; }
+function isCurrent(p){ return current>=0&&state.pages[current]===p; }
+
+/* ===== Kamera direkt im Browser (Foto und Video) ===== */
+let cam={ stream:null, mode:null, facing:"user", rec:null, chunks:[], timer:null, cancel:false, onFile:null };
+function camSupported(){ return !!(window.isSecureContext&&navigator.mediaDevices&&navigator.mediaDevices.getUserMedia); }
+// Fallback: Dateiauswahl, die am Handy direkt die Kamera-App öffnet
+function pickWithCapture(mode,onFile){
+  const i=document.createElement("input"); i.type="file"; i.accept=mode==="video"?"video/*":"image/*"; i.setAttribute("capture","user");
+  i.onchange=()=>{ if(i.files[0]) onFile(i.files[0]); }; i.click();
+}
+function openCamera(mode,onFile){
+  if(!camSupported()||(mode==="video"&&!window.MediaRecorder)){ pickWithCapture(mode,onFile); return; }
+  cam.mode=mode; cam.onFile=onFile;
+  document.getElementById("camTitle").textContent=mode==="video"?"🎥 Video aufnehmen (max. 1 Minute)":"📸 Foto machen";
+  document.getElementById("camShotBtn").classList.toggle("hidden",mode!=="photo");
+  document.getElementById("camRecBtn").classList.toggle("hidden",mode!=="video");
+  document.getElementById("camRecBtn").textContent="⏺ Aufnahme starten";
+  document.getElementById("camOverlay").classList.remove("hidden");
+  history.pushState(Object.assign({},history.state,{cam:true}),"",location.hash);
+  startStream();
+}
+async function startStream(){
+  stopStream();
+  const st=document.getElementById("camStatus"); st.textContent="Kamera wird gestartet…";
+  try{
+    cam.stream=await navigator.mediaDevices.getUserMedia({ video:{facingMode:cam.facing,width:{ideal:1280},height:{ideal:720}}, audio:cam.mode==="video" });
+    const v=document.getElementById("camVideo"); v.srcObject=cam.stream; v.classList.toggle("mirror",cam.facing==="user");
+    try{ await v.play(); }catch(e){}
+    st.textContent="";
+  }catch(e){ st.textContent="Kein Zugriff auf die Kamera. Erlaube den Zugriff im Browser oder wähle unten eine Datei."; }
+}
+function stopStream(){ if(cam.stream){ cam.stream.getTracks().forEach(t=>t.stop()); cam.stream=null; } }
+function flipCamera(){ if(cam.rec) return; cam.facing=cam.facing==="user"?"environment":"user"; startStream(); }
+function closeCamera(viaBack){
+  if(document.getElementById("camOverlay").classList.contains("hidden")) return;
+  if(!viaBack&&history.state&&history.state.cam){ skipNextPop=true; history.back(); }
+  if(cam.rec){ cam.cancel=true; cam.rec.stop(); }
+  clearInterval(cam.timer); stopStream();
+  document.getElementById("camVideo").srcObject=null;
+  document.getElementById("camOverlay").classList.add("hidden");
+}
+function camFallback(){ const cb=cam.onFile, m=cam.mode; closeCamera(); pickWithCapture(m,cb); }
+function camShot(){
+  const v=document.getElementById("camVideo"); if(!v.videoWidth) return;
+  const c=document.createElement("canvas"); c.width=v.videoWidth; c.height=v.videoHeight; c.getContext("2d").drawImage(v,0,0);
+  c.toBlob(b=>{ const cb=cam.onFile; closeCamera(); cb(new File([b],"foto.jpg",{type:"image/jpeg"})); },"image/jpeg",0.9);
+}
+function camRecord(){
+  const btn=document.getElementById("camRecBtn"), st=document.getElementById("camStatus");
+  if(cam.rec){ cam.rec.stop(); return; }
+  if(!cam.stream) return;
+  const t=["video/mp4","video/webm;codecs=vp8,opus","video/webm"].find(x=>MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(x));
+  const rec=new MediaRecorder(cam.stream,Object.assign({videoBitsPerSecond:2500000},t?{mimeType:t}:{}));
+  cam.rec=rec; cam.chunks=[]; cam.cancel=false;
+  rec.ondataavailable=e=>{ if(e.data.size) cam.chunks.push(e.data); };
+  rec.onstop=()=>{ cam.rec=null; clearInterval(cam.timer); if(cam.cancel) return;
+    const type=(rec.mimeType||"video/webm").split(";")[0];
+    const f=new File(cam.chunks,"video."+(type.indexOf("mp4")>=0?"mp4":"webm"),{type:type});
+    const cb=cam.onFile; closeCamera(); cb(f); };
+  rec.start(1000);
+  let s=0; const fmt=x=>Math.floor(x/60)+":"+String(x%60).padStart(2,"0");
+  btn.textContent="⏹ Stopp"; st.textContent="● Aufnahme "+fmt(0)+" / "+fmt(MAX_REC_SECONDS);
+  cam.timer=setInterval(()=>{ s++; st.textContent="● Aufnahme "+fmt(s)+" / "+fmt(MAX_REC_SECONDS); if(s>=MAX_REC_SECONDS&&cam.rec) cam.rec.stop(); },1000);
+}
+
+/* ===== Sprachnachricht aufnehmen (für Seite und Mission) ===== */
+let mediaRecorder=null, recording=null;
+async function recordAudio(btn,status,onFile){
+  if(recording){ const same=recording===btn; mediaRecorder.stop(); return same||undefined; }
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ status.textContent="Aufnahme hier nicht möglich – bitte eine Datei hochladen."; return; }
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    const chunks=[], label=btn.innerHTML;
+    mediaRecorder=new MediaRecorder(stream);
+    mediaRecorder.ondataavailable=e=>{ if(e.data.size>0) chunks.push(e.data); };
+    mediaRecorder.onstop=()=>{ const type=(mediaRecorder.mimeType||"audio/webm").split(";")[0];
+      const ext=type.indexOf("mp4")>=0?"m4a":(type.indexOf("ogg")>=0?"ogg":"webm");
+      stream.getTracks().forEach(t=>t.stop()); recording=null; btn.innerHTML=label;
+      onFile(new File(chunks,"aufnahme."+ext,{type:type})); };
+    mediaRecorder.start(); recording=btn; btn.innerHTML='<span class="rec-dot"></span> Stopp'; status.textContent="Aufnahme läuft...";
+  }catch(err){ status.textContent="Kein Mikro-Zugriff – bitte eine Datei hochladen."; }
+}
+
+/* ===== Foto der Seite ===== */
+async function setPhoto(p,file){
+  try{ const name=await uploadBlob(await shrinkImage(file,900)); p.photo=name;
+    if(isCurrent(p)){ const img=document.getElementById("photoImg"), hint=document.getElementById("photoHint");
+      img.src=mediaUrl(name); img.classList.remove("hidden"); hint.classList.add("hidden"); }
+    pushPage(p);
+  }catch(err){ showBanner("Foto konnte nicht hochgeladen werden.",true); }
+}
+function onPhoto(e){ const file=e.target.files[0]; e.target.value=""; if(file&&current>=0) setPhoto(state.pages[current],file); }
+function takePhoto(){ if(current<0) return; const p=state.pages[current]; openCamera("photo",f=>setPhoto(p,f)); }
+function removePhoto(){ if(current<0)return; state.pages[current].photo=null;
+  document.getElementById("photoImg").classList.add("hidden"); document.getElementById("photoHint").classList.remove("hidden"); saveAll(); }
+
+/* ===== Sprachnachricht der Seite ===== */
+async function setAudio(p,file){
+  try{ const name=await uploadBlob(file,document.getElementById("recStatus")); p.audio=name; if(isCurrent(p)) setAudioUI(name); pushPage(p); }
+  catch(err){ showBanner("Sprachnachricht konnte nicht gespeichert werden.",true); }
+}
+function onAudioUpload(e){ const file=e.target.files[0]; e.target.value=""; if(file&&current>=0&&!tooBig(file)) setAudio(state.pages[current],file); }
+function toggleRecord(){ if(current<0) return; const p=state.pages[current];
+  recordAudio(document.getElementById("recBtn"),document.getElementById("recStatus"),f=>setAudio(p,f)); }
+function setAudioUI(name){ const pl=document.getElementById("audioPlayer"), del=document.getElementById("audioDel");
+  if(name){ pl.src=mediaUrl(name); pl.classList.remove("hidden"); del.classList.remove("hidden"); }
+  else{ pl.removeAttribute("src"); pl.classList.add("hidden"); del.classList.add("hidden"); } }
+function removeAudio(){ if(current<0)return; state.pages[current].audio=null; setAudioUI(null); saveAll(); }
+
+/* ===== Video der Seite ===== */
+async function setVideo(p,file){
+  if(tooBig(file)) return;
+  try{ const name=await uploadBlob(file,document.getElementById("vidStatus")); p.video=name; if(isCurrent(p)) setVideoUI(name); pushPage(p); }
+  catch(err){ showBanner("Video konnte nicht hochgeladen werden (evtl. zu groß für den Server).",true); }
+}
+function onVideoUpload(e){ const file=e.target.files[0]; e.target.value=""; if(file&&current>=0) setVideo(state.pages[current],file); }
+function recordVideo(){ if(current<0) return; const p=state.pages[current]; openCamera("video",f=>setVideo(p,f)); }
+function setVideoUI(name){ const pl=document.getElementById("videoPlayer"), del=document.getElementById("videoDel");
+  if(name){ pl.src=mediaUrl(name); pl.classList.remove("hidden"); del.classList.remove("hidden"); }
+  else{ pl.removeAttribute("src"); pl.classList.add("hidden"); del.classList.add("hidden"); } }
+function removeVideo(){ if(current<0)return; state.pages[current].video=null; setVideoUI(null); saveAll(); }
+
+/* ===== Beweise für die Mini-Mission ===== */
+function mediaKind(name){ const e=(name.split(".").pop()||"").toLowerCase();
+  return ["jpg","png","webp"].includes(e)?"image":(["mp4","webm"].includes(e)?"video":"audio"); }
+async function addProof(p,file){
+  if(p.task.media.length>=MAX_PROOF){ showBanner("Pro Mission gehen höchstens "+MAX_PROOF+" Fotos, Videos oder Sprachnachrichten.",true); return; }
+  if(tooBig(file)) return;
+  const status=document.getElementById("proofStatus");
+  try{
+    const up=(file.type||"").indexOf("image/")===0?await shrinkImage(file,1600):file;
+    const name=await uploadBlob(up,isCurrent(p)?status:null);
+    p.task.media.push(name); p.task.done=true;
+    if(isCurrent(p)){ renderProof(p); document.getElementById("missionDone").checked=true; }
+    pushPage(p);
+  }catch(err){ showBanner("Der Beweis konnte nicht hochgeladen werden.",true); }
+}
+function renderProof(p){
+  const wrap=document.getElementById("proofList"); wrap.innerHTML="";
+  p.task.media.forEach((name,idx)=>{
+    const kind=mediaKind(name), item=el("div","proof-item "+kind);
+    if(kind==="image"){ const a=el("a"); a.href=mediaUrl(name); a.target="_blank"; const img=el("img"); img.src=mediaUrl(name); img.alt="Beweisfoto"; a.appendChild(img); item.appendChild(a); }
+    else{ const m=el(kind); m.controls=true; m.preload="metadata"; if(kind==="video") m.setAttribute("playsinline",""); m.src=mediaUrl(name); item.appendChild(m); }
+    const del=el("button","mini warn del"); del.type="button"; del.textContent="✕"; del.title="Entfernen";
+    del.onclick=()=>{ p.task.media.splice(idx,1); renderProof(p); pushPage(p); };
+    item.appendChild(del); wrap.appendChild(item);
+  });
+}
+function proofPhoto(){ if(current<0) return; const p=state.pages[current]; openCamera("photo",f=>addProof(p,f)); }
+function proofVideo(){ if(current<0) return; const p=state.pages[current]; openCamera("video",f=>addProof(p,f)); }
+function toggleProofRecord(){ if(current<0) return; const p=state.pages[current];
+  recordAudio(document.getElementById("proofRecBtn"),document.getElementById("proofStatus"),f=>addProof(p,f)); }
+async function onProofFile(e){ const files=[...e.target.files]; e.target.value=""; if(current<0) return; const p=state.pages[current];
+  for(const f of files) await addProof(p,f); }
+
+/* ===== Konfetti ===== */
+function confetti(icon){
+  const c=document.getElementById("confetti"); c.innerHTML="";
+  const e=["🎈","🎉","⭐",icon,"🎁","💛","🩷"];
+  for(let i=0;i<10;i++){ const s=document.createElement("span"); s.textContent=e[i%e.length];
+    s.style.left=(5+i*9)+"%"; s.style.animationDuration=(4+(i%4))+"s"; s.style.animationDelay=(i*0.4)+"s"; c.appendChild(s); }
+}
+
+/* ===== Start ===== */
+document.getElementById("codeInput").addEventListener("keydown",function(ev){ if(ev.key==="Enter") doLogin(); });
+document.getElementById("coverTitle").addEventListener("input",onTitleEdit);
+(async function(){
+  const j=await api("status",{});
+  if(!j || j.error){
+    document.getElementById("loginErr").textContent = (j && j.error==="bad_response")
+      ? "Hinweis: Der Server führt PHP gerade nicht aus. Bitte die Seite über deine Webserver-Adresse öffnen (https://.../freundebuch/)."
+      : "Hinweis: Server nicht erreichbar. Läuft die Seite über deinen Webserver (PHP)?";
+    document.getElementById("codeInput").focus();
+    return;
+  }
+  if(j.auth){ applyStatus(j); enterApp(); }
+  else{ document.getElementById("codeInput").focus(); }
+})();
+</script>
+</body>
+</html>

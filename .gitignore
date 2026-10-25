@@ -1,0 +1,9 @@
+# Eigene Einstellungen mit dem echten Admin-Code – Vorlage ist config.example.php
+config.php
+
+# Feiern, Gästeseiten und Medien (nur die Schutzdatei gehört ins Repo)
+data/*
+!data/.htaccess
+
+# Ordner der alten Version (vor den Feiern/Events)
+uploads/
